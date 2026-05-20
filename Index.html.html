@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shubham NA — AI & LLM Data Trainer</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@1,400;1,700&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+:root{
+  --bg:#0A0618;
+  --bg2:#0F0B22;
+  --bg3:#130D2A;
+  --white:#F8F6FF;
+  --muted:rgba(248,246,255,0.55);
+  --border:rgba(248,246,255,0.08);
+  /* Vibrant AI-themed palette */
+  --violet:#7C3AED;
+  --violet2:#9D5BF5;
+  --cyan:#06B6D4;
+  --cyan2:#22D3EE;
+  --pink:#EC4899;
+  --pink2:#F472B6;
+  --green:#10B981;
+  --green2:#34D399;
+  --orange:#F59E0B;
+  --orange2:#FCD34D;
+  /* Gradients */
+  --grad1:linear-gradient(135deg,#7C3AED,#06B6D4);
+  --grad2:linear-gradient(135deg,#EC4899,#7C3AED);
+  --grad3:linear-gradient(135deg,#06B6D4,#10B981);
+  --grad4:linear-gradient(135deg,#F59E0B,#EC4899);
+  --grad-hero:linear-gradient(135deg,#7C3AED 0%,#06B6D4 40%,#EC4899 70%,#F59E0B 100%);
+}
+body{background:var(--bg);color:var(--white);font-family:'Inter',sans-serif;font-weight:300;overflow-x:hidden;cursor:none}
+
+/* CURSOR */
+#cur{position:fixed;width:10px;height:10px;border-radius:50%;background:var(--cyan);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s;mix-blend-mode:screen}
+#cur2{position:fixed;width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(124,58,237,.6);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s}
+body.lh #cur{width:18px;height:18px;background:var(--pink)}
+body.lh #cur2{width:64px;height:64px;border-color:var(--pink)}
+
+/* LOADER */
+#loader{position:fixed;inset:0;z-index:8000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;transition:opacity 1s ease;background:var(--bg);overflow:hidden}
+#loader.hide{opacity:0;pointer-events:none}
+.loader-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(124,58,237,.3) 0%,transparent 60%),radial-gradient(ellipse at 70% 50%,rgba(6,182,212,.2) 0%,transparent 60%),radial-gradient(ellipse at 50% 80%,rgba(236,72,153,.2) 0%,transparent 60%)}
+.loader-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(4rem,14vw,11rem);letter-spacing:.05em;background:var(--grad-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;position:relative;z-index:1}
+.loader-bar-wrap{width:220px;height:2px;background:rgba(255,255,255,.1);position:relative;z-index:1;overflow:hidden}
+.loader-bar{height:100%;width:0;background:var(--grad1);animation:lbar 1.8s ease forwards}
+@keyframes lbar{to{width:100%}}
+.loader-sub{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(248,246,255,.4);position:relative;z-index:1}
+
+/* 3D CANVAS */
+#three-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* CONTENT */
+#content{position:relative;z-index:10}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:1.3rem 3rem;transition:background .4s,backdrop-filter .4s;border-bottom:1px solid transparent}
+nav.sc{background:rgba(10,6,24,.88);backdrop-filter:blur(24px);border-bottom-color:var(--border)}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.2em;background:var(--grad1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-decoration:none}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(248,246,255,.4);text-decoration:none;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--cyan)}
+.nav-cta{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;padding:.6rem 1.6rem;background:var(--grad1);color:#fff;text-decoration:none;border-radius:2px;transition:all .3s;position:relative;overflow:hidden}
+.nav-cta::before{content:'';position:absolute;inset:0;background:var(--grad2);opacity:0;transition:opacity .3s}
+.nav-cta:hover::before{opacity:1}
+.nav-cta span{position:relative;z-index:1}
+.nav-cta:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(124,58,237,.4)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:0 3rem;position:relative;overflow:hidden}
+/* ambient glows */
+.hero::before{content:'';position:absolute;width:700px;height:700px;background:radial-gradient(circle,rgba(124,58,237,.18) 0%,transparent 70%);top:-200px;left:-200px;pointer-events:none;animation:drift1 8s ease-in-out infinite}
+.hero::after{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(6,182,212,.15) 0%,transparent 70%);bottom:-100px;right:-100px;pointer-events:none;animation:drift2 10s ease-in-out infinite}
+@keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,30px)}}
+@keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,-20px)}}
+.hero-badge{display:inline-flex;align-items:center;gap:.6rem;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.35);padding:.4rem 1rem;border-radius:2px;margin-bottom:1.8rem;opacity:0;animation:fadeUp .8s .4s forwards}
+.hero-badge-dot{width:6px;height:6px;background:var(--green2);border-radius:50%;animation:pulse 2s infinite}
+.hero-badge-text{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--violet2)}
+.hero-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(14vw,19vw,21vw);line-height:.82;letter-spacing:-.01em;margin-bottom:1.5rem;opacity:0;animation:fadeUp .9s .55s forwards}
+.hero-name .g1{background:var(--grad1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block}
+.hero-name .g2{background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block;opacity:.5}
+.hero-tags{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:2rem;opacity:0;animation:fadeUp .8s .7s forwards}
+.hero-tag-chip{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.1em;padding:.35rem .9rem;border-radius:2px;border:1px solid}
+.htc-v{border-color:rgba(124,58,237,.5);color:var(--violet2);background:rgba(124,58,237,.08)}
+.htc-c{border-color:rgba(6,182,212,.5);color:var(--cyan2);background:rgba(6,182,212,.08)}
+.htc-p{border-color:rgba(236,72,153,.5);color:var(--pink2);background:rgba(236,72,153,.08)}
+.htc-g{border-color:rgba(16,185,129,.5);color:var(--green2);background:rgba(16,185,129,.08)}
+.htc-o{border-color:rgba(245,158,11,.5);color:var(--orange2);background:rgba(245,158,11,.08)}
+.hero-bottom{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:2rem;opacity:0;animation:fadeUp .8s .9s forwards}
+.hero-desc{max-width:400px;font-size:.9rem;color:var(--muted);line-height:1.85}
+.hero-actions{display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+.btn-primary{display:inline-block;padding:.9rem 2.2rem;background:var(--grad1);color:#fff;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;text-decoration:none;border-radius:2px;transition:all .3s;position:relative;overflow:hidden}
+.btn-primary::before{content:'';position:absolute;inset:0;background:var(--grad2);opacity:0;transition:opacity .3s}
+.btn-primary:hover::before{opacity:1}
+.btn-primary span{position:relative;z-index:1}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 15px 40px rgba(124,58,237,.4)}
+.btn-sec{display:inline-block;padding:.9rem 2.2rem;background:transparent;color:var(--white);font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;text-decoration:none;border:1px solid rgba(248,246,255,.2);border-radius:2px;transition:all .3s}
+.btn-sec:hover{border-color:var(--cyan);color:var(--cyan);transform:translateY(-3px);box-shadow:0 10px 30px rgba(6,182,212,.15)}
+.hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;opacity:0;animation:fadeUp .8s 1.1s forwards;margin-top:3.5rem;padding-top:2.5rem;border-top:1px solid var(--border)}
+.stat-item{text-align:center}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:3rem;line-height:1}
+.stat-num.s1{background:var(--grad1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-num.s2{background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-num.s3{background:var(--grad3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-num.s4{background:var(--grad4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-label{font-family:'Space Mono',monospace;font-size:.53rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(248,246,255,.35);margin-top:.3rem}
+.scroll-hint{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;animation:bounce 2.5s ease-in-out infinite}
+.scroll-hint-text{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(248,246,255,.25)}
+.scroll-line{width:1px;height:35px;background:linear-gradient(to bottom,var(--violet),transparent)}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+
+/* TICKER */
+.ticker{border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:.85rem 0;overflow:hidden;white-space:nowrap;position:relative}
+.ticker::before,.ticker::after{content:'';position:absolute;top:0;bottom:0;width:120px;z-index:2}
+.ticker::before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
+.ticker::after{right:0;background:linear-gradient(-90deg,var(--bg),transparent)}
+.ticker-track{display:inline-flex;animation:tick 28s linear infinite}
+.ticker-track:hover{animation-play-state:paused}
+.ti{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;padding:0 2rem;color:rgba(248,246,255,.3)}
+.ti.v{color:var(--violet2)}.ti.c{color:var(--cyan2)}.ti.p{color:var(--pink2)}.ti.g{color:var(--green2)}.ti.o{color:var(--orange2)}
+
+/* SECTION WRAPPER */
+.section{padding:9rem 3rem;max-width:1300px;margin:0 auto}
+.sec-head{display:flex;align-items:center;gap:2rem;margin-bottom:5rem;padding-bottom:2rem;border-bottom:1px solid var(--border);position:relative}
+.sec-head::after{content:'';position:absolute;bottom:-1px;left:0;width:80px;height:2px}
+.sec-head.sh1::after{background:var(--grad1)}
+.sec-head.sh2::after{background:var(--grad2)}
+.sec-head.sh3::after{background:var(--grad3)}
+.sec-head.sh4::after{background:var(--grad4)}
+.sec-num{font-family:'Space Mono',monospace;font-size:.6rem;color:rgba(248,246,255,.3);letter-spacing:.15em}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,5.5vw,5rem);letter-spacing:.03em;line-height:1;color:var(--white)}
+.sec-title em{font-family:'Playfair Display',serif;font-style:italic;font-size:.8em}
+.sec-title.t1 em{background:var(--grad1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sec-title.t2 em{background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sec-title.t3 em{background:var(--grad3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sec-title.t4 em{background:var(--grad4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* PROJECT CARDS */
+.proj-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--border)}
+.proj-card{background:var(--bg2);padding:2.8rem;position:relative;overflow:hidden;transition:background .3s;transform-style:preserve-3d}
+.proj-card:hover{background:var(--bg3)}
+/* color accent bars */
+.proj-card:nth-child(1) .pc-bar{background:var(--grad1)}
+.proj-card:nth-child(2) .pc-bar{background:var(--grad2)}
+.proj-card:nth-child(3) .pc-bar{background:var(--grad3)}
+.proj-card:nth-child(4) .pc-bar{background:var(--grad4)}
+.proj-card:nth-child(5) .pc-bar{background:linear-gradient(135deg,var(--green),var(--cyan))}
+.proj-card:nth-child(6) .pc-bar{background:linear-gradient(135deg,var(--pink),var(--orange))}
+.pc-bar{position:absolute;top:0;left:0;right:0;height:2px;transform:scaleX(0);transform-origin:left;transition:transform .5s ease}
+.proj-card:hover .pc-bar{transform:scaleX(1)}
+.pc-glow{position:absolute;inset:0;opacity:0;transition:opacity .4s;pointer-events:none}
+.proj-card:nth-child(1) .pc-glow{background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(124,58,237,.07) 0%,transparent 60%)}
+.proj-card:nth-child(2) .pc-glow{background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(236,72,153,.07) 0%,transparent 60%)}
+.proj-card:nth-child(3) .pc-glow{background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(6,182,212,.07) 0%,transparent 60%)}
+.proj-card:nth-child(4) .pc-glow{background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(245,158,11,.07) 0%,transparent 60%)}
+.proj-card:nth-child(5) .pc-glow{background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(16,185,129,.07) 0%,transparent 60%)}
+.proj-card:nth-child(6) .pc-glow{background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(236,72,153,.07) 0%,transparent 60%)}
+.proj-card:hover .pc-glow{opacity:1}
+.pc-num{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.15em;color:rgba(248,246,255,.3);margin-bottom:1.5rem;display:flex;align-items:center;gap:.8rem}
+.pc-num::after{content:'';flex:1;height:1px;background:var(--border)}
+.pc-name{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.04em;line-height:1;margin-bottom:.5rem;color:var(--white)}
+.pc-client{font-family:'Playfair Display',serif;font-style:italic;font-size:.88rem;margin-bottom:1.2rem}
+.proj-card:nth-child(1) .pc-client{color:var(--violet2)}
+.proj-card:nth-child(2) .pc-client{color:var(--pink2)}
+.proj-card:nth-child(3) .pc-client{color:var(--cyan2)}
+.proj-card:nth-child(4) .pc-client{color:var(--orange2)}
+.proj-card:nth-child(5) .pc-client{color:var(--green2)}
+.proj-card:nth-child(6) .pc-client{color:var(--pink2)}
+.pc-desc{font-size:.83rem;color:var(--muted);line-height:1.8}
+.pc-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:1.8rem}
+.pc-tag{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(248,246,255,.08);color:rgba(248,246,255,.35);padding:.3rem .7rem;transition:all .25s;border-radius:2px}
+.proj-card:nth-child(1):hover .pc-tag{border-color:rgba(124,58,237,.4);color:var(--violet2)}
+.proj-card:nth-child(2):hover .pc-tag{border-color:rgba(236,72,153,.4);color:var(--pink2)}
+.proj-card:nth-child(3):hover .pc-tag{border-color:rgba(6,182,212,.4);color:var(--cyan2)}
+.proj-card:nth-child(4):hover .pc-tag{border-color:rgba(245,158,11,.4);color:var(--orange2)}
+.proj-card:nth-child(5):hover .pc-tag{border-color:rgba(16,185,129,.4);color:var(--green2)}
+.proj-card:nth-child(6):hover .pc-tag{border-color:rgba(236,72,153,.4);color:var(--pink2)}
+
+/* EXPERIENCE TIMELINE */
+.timeline{position:relative;padding-left:2.5rem}
+.timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,var(--violet),var(--cyan),var(--pink),rgba(248,246,255,.05))}
+.t-item{position:relative;padding-bottom:4rem}
+.t-dot{position:absolute;left:-2.8rem;top:.3rem;width:14px;height:14px;border-radius:50%;border:2px solid;transition:box-shadow .3s,transform .3s}
+.t-item:nth-child(1) .t-dot{border-color:var(--violet);background:var(--bg)}
+.t-item:nth-child(2) .t-dot{border-color:var(--pink);background:var(--bg)}
+.t-item:nth-child(3) .t-dot{border-color:var(--cyan);background:var(--bg)}
+.t-item:nth-child(4) .t-dot{border-color:var(--green);background:var(--bg)}
+.t-item:nth-child(5) .t-dot{border-color:var(--orange);background:var(--bg)}
+.t-item:nth-child(6) .t-dot{border-color:var(--pink2);background:var(--bg)}
+.t-item:nth-child(7) .t-dot{border-color:var(--violet2);background:var(--bg)}
+.t-item:hover .t-dot{transform:scale(1.4)}
+.t-item:nth-child(1):hover .t-dot{background:var(--violet);box-shadow:0 0 20px rgba(124,58,237,.8)}
+.t-item:nth-child(2):hover .t-dot{background:var(--pink);box-shadow:0 0 20px rgba(236,72,153,.8)}
+.t-item:nth-child(3):hover .t-dot{background:var(--cyan);box-shadow:0 0 20px rgba(6,182,212,.8)}
+.t-item:nth-child(4):hover .t-dot{background:var(--green);box-shadow:0 0 20px rgba(16,185,129,.8)}
+.t-item:nth-child(5):hover .t-dot{background:var(--orange);box-shadow:0 0 20px rgba(245,158,11,.8)}
+.t-item:nth-child(6):hover .t-dot{background:var(--pink2);box-shadow:0 0 20px rgba(244,114,182,.8)}
+.t-item:nth-child(7):hover .t-dot{background:var(--violet2);box-shadow:0 0 20px rgba(157,91,245,.8)}
+.t-period{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.12em;margin-bottom:.6rem}
+.t-item:nth-child(1) .t-period{color:var(--violet2)}
+.t-item:nth-child(2) .t-period{color:var(--pink2)}
+.t-item:nth-child(3) .t-period{color:var(--cyan2)}
+.t-item:nth-child(4) .t-period{color:var(--green2)}
+.t-item:nth-child(5) .t-period{color:var(--orange2)}
+.t-item:nth-child(6) .t-period{color:var(--pink2)}
+.t-item:nth-child(7) .t-period{color:var(--violet2)}
+.t-company{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.04em;color:var(--white);margin-bottom:.3rem}
+.t-role{font-family:'Playfair Display',serif;font-style:italic;font-size:.88rem;color:rgba(248,246,255,.55);margin-bottom:1rem}
+.t-desc{font-size:.83rem;color:var(--muted);line-height:1.8;max-width:700px}
+.t-skills{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:1rem}
+.t-sk{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.08em;padding:.3rem .7rem;border-radius:2px;border:1px solid;transition:all .2s}
+.t-item:nth-child(1) .t-sk{border-color:rgba(124,58,237,.2);color:var(--violet2);background:rgba(124,58,237,.05)}
+.t-item:nth-child(2) .t-sk{border-color:rgba(236,72,153,.2);color:var(--pink2);background:rgba(236,72,153,.05)}
+.t-item:nth-child(3) .t-sk{border-color:rgba(6,182,212,.2);color:var(--cyan2);background:rgba(6,182,212,.05)}
+.t-item:nth-child(4) .t-sk{border-color:rgba(16,185,129,.2);color:var(--green2);background:rgba(16,185,129,.05)}
+.t-item:nth-child(5) .t-sk{border-color:rgba(245,158,11,.2);color:var(--orange2);background:rgba(245,158,11,.05)}
+.t-item:nth-child(6) .t-sk{border-color:rgba(244,114,182,.2);color:var(--pink2);background:rgba(244,114,182,.05)}
+.t-item:nth-child(7) .t-sk{border-color:rgba(157,91,245,.2);color:var(--violet2);background:rgba(157,91,245,.05)}
+
+/* SKILLS */
+.skills-bg{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.skills-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 0% 50%,rgba(124,58,237,.08) 0%,transparent 50%),radial-gradient(ellipse at 100% 50%,rgba(6,182,212,.06) 0%,transparent 50%);pointer-events:none}
+.skills-inner{max-width:1300px;margin:0 auto;padding:9rem 3rem;display:grid;grid-template-columns:280px 1fr;gap:8rem;align-items:start;position:relative;z-index:1}
+.sk-left h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,4vw,4.5rem);line-height:.9;margin-bottom:1.5rem}
+.sk-left h2 .gl1{background:var(--grad1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block}
+.sk-left h2 .gl2{background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block}
+.sk-left p{font-size:.85rem;color:var(--muted);line-height:1.85}
+.sk-groups{display:flex;flex-direction:column;gap:2.5rem}
+.sg-label{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;margin-bottom:1rem;padding-bottom:.6rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.8rem}
+.sg-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+.sg-label.l1{color:var(--violet2)}.sg-label.l2{color:var(--cyan2)}.sg-label.l3{color:var(--pink2)}.sg-label.l4{color:var(--green2)}
+.sg-pills{display:flex;flex-wrap:wrap;gap:.5rem}
+.sg-pill{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.06em;border:1px solid rgba(248,246,255,.08);color:rgba(248,246,255,.5);padding:.48rem 1rem;transition:all .3s;border-radius:2px;position:relative;overflow:hidden}
+.sg-pill:hover{transform:translateY(-2px)}
+.sg-pill.p1:hover,.sg-pill.p1.hi{border-color:rgba(124,58,237,.5);color:var(--violet2);background:rgba(124,58,237,.08);box-shadow:0 4px 16px rgba(124,58,237,.15)}
+.sg-pill.p2:hover,.sg-pill.p2.hi{border-color:rgba(6,182,212,.5);color:var(--cyan2);background:rgba(6,182,212,.08);box-shadow:0 4px 16px rgba(6,182,212,.15)}
+.sg-pill.p3:hover,.sg-pill.p3.hi{border-color:rgba(236,72,153,.5);color:var(--pink2);background:rgba(236,72,153,.08);box-shadow:0 4px 16px rgba(236,72,153,.15)}
+.sg-pill.p4:hover,.sg-pill.p4.hi{border-color:rgba(16,185,129,.5);color:var(--green2);background:rgba(16,185,129,.08);box-shadow:0 4px 16px rgba(16,185,129,.15)}
+
+/* CERTS */
+.certs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border)}
+.cert-card{background:var(--bg2);padding:2.2rem;position:relative;overflow:hidden;transition:background .3s;transform-style:preserve-3d}
+.cert-card:hover{background:var(--bg3)}
+.cert-card .cc-top{position:absolute;top:0;left:0;right:0;height:2px;transform:scaleX(0);transform-origin:left;transition:transform .5s}
+.cert-card:hover .cc-top{transform:scaleX(1)}
+.cert-card:nth-child(1) .cc-top{background:var(--grad1)}
+.cert-card:nth-child(2) .cc-top{background:var(--grad2)}
+.cert-card:nth-child(3) .cc-top{background:var(--grad3)}
+.cert-card:nth-child(4) .cc-top{background:var(--grad4)}
+.cert-card:nth-child(5) .cc-top{background:linear-gradient(135deg,var(--cyan),var(--violet))}
+.cert-card:nth-child(6) .cc-top{background:linear-gradient(135deg,var(--green),var(--cyan))}
+.cert-card:nth-child(7) .cc-top{background:linear-gradient(135deg,var(--pink),var(--orange))}
+.cert-card:nth-child(8) .cc-top{background:var(--grad1)}
+.cert-card:nth-child(9) .cc-top{background:var(--grad3)}
+.cert-card .cc-glow{position:absolute;inset:0;opacity:0;transition:opacity .4s;pointer-events:none}
+.cert-card:hover .cc-glow{opacity:1}
+.cert-card:nth-child(odd) .cc-glow{background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(124,58,237,.06) 0%,transparent 60%)}
+.cert-card:nth-child(even) .cc-glow{background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(6,182,212,.06) 0%,transparent 60%)}
+.cc-badge{display:inline-flex;align-items:center;gap:.4rem;font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;padding:.28rem .65rem;border-radius:2px;border:1px solid;margin-bottom:1.2rem}
+.cert-card:nth-child(1) .cc-badge{color:var(--violet2);border-color:rgba(124,58,237,.3);background:rgba(124,58,237,.06)}
+.cert-card:nth-child(2) .cc-badge{color:var(--pink2);border-color:rgba(236,72,153,.3);background:rgba(236,72,153,.06)}
+.cert-card:nth-child(3) .cc-badge{color:var(--cyan2);border-color:rgba(6,182,212,.3);background:rgba(6,182,212,.06)}
+.cert-card:nth-child(4) .cc-badge{color:var(--green2);border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.06)}
+.cert-card:nth-child(5) .cc-badge,.cert-card:nth-child(8) .cc-badge{color:var(--orange2);border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.06)}
+.cert-card:nth-child(6) .cc-badge,.cert-card:nth-child(9) .cc-badge{color:var(--cyan2);border-color:rgba(6,182,212,.3);background:rgba(6,182,212,.06)}
+.cert-card:nth-child(7) .cc-badge{color:var(--pink2);border-color:rgba(236,72,153,.3);background:rgba(236,72,153,.06)}
+.cc-name{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:.04em;line-height:1.15;margin-bottom:.5rem;color:var(--white)}
+.cc-issuer{font-family:'Playfair Display',serif;font-style:italic;font-size:.8rem;color:rgba(248,246,255,.45);margin-bottom:.3rem}
+.cc-date{font-family:'Space Mono',monospace;font-size:.58rem;color:rgba(248,246,255,.3);letter-spacing:.1em}
+.cert-card .arr{position:absolute;bottom:1.5rem;right:1.5rem;font-size:.85rem;color:rgba(248,246,255,.1);transition:all .3s}
+.cert-card:hover .arr{color:var(--cyan);transform:translate(3px,-3px)}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:8rem;align-items:start}
+.about-big{font-family:'Bebas Neue',sans-serif;line-height:.85;margin-bottom:2rem}
+.about-big .ab1{font-size:clamp(4rem,6vw,7rem);background:var(--grad1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block}
+.about-big .ab2{font-size:clamp(5rem,8vw,9rem);background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block}
+.about-p{font-size:.9rem;color:var(--muted);line-height:1.95;margin-bottom:1rem}
+.lang-wrap{display:flex;gap:.8rem;margin-top:2rem;flex-wrap:wrap}
+.lang-badge{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;padding:.5rem 1.2rem;border-radius:2px;transition:all .25s}
+.lang-badge.lb1{border:1px solid rgba(124,58,237,.5);color:var(--violet2);background:rgba(124,58,237,.08)}
+.lang-badge.lb2{border:1px solid rgba(6,182,212,.5);color:var(--cyan2);background:rgba(6,182,212,.08)}
+.lang-badge:hover{transform:translateY(-2px)}
+.edu-stack{border-top:1px solid var(--border)}
+.edu-entry{padding:2rem 0;border-bottom:1px solid var(--border);transition:padding .3s,background .3s;border-radius:2px}
+.edu-entry:hover{padding-left:.8rem}
+.edu-deg{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.04em;margin-bottom:.3rem;color:var(--white)}
+.edu-school{font-family:'Playfair Display',serif;font-style:italic;font-size:.83rem;margin-bottom:.25rem}
+.edu-entry:nth-child(1) .edu-school{color:var(--violet2)}
+.edu-entry:nth-child(2) .edu-school{color:var(--cyan2)}
+.edu-entry:nth-child(3) .edu-school{color:var(--pink2)}
+.edu-entry:nth-child(4) .edu-school{color:var(--green2)}
+.edu-yr{font-family:'Space Mono',monospace;font-size:.58rem;color:rgba(248,246,255,.3);letter-spacing:.1em}
+
+/* CONTACT */
+.contact-sec{padding:9rem 3rem;max-width:1300px;margin:0 auto;text-align:center;position:relative}
+.contact-sec::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;height:400px;background:radial-gradient(ellipse,rgba(124,58,237,.08) 0%,transparent 70%);pointer-events:none}
+.contact-pre{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:rgba(248,246,255,.3);margin-bottom:1.5rem}
+.contact-mega{font-family:'Bebas Neue',sans-serif;font-size:clamp(5rem,14vw,16rem);line-height:.82;background:var(--grad-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4rem}
+.c-cards{display:flex;justify-content:center;gap:2px;margin-bottom:4rem;flex-wrap:wrap;background:var(--border)}
+.c-crd{background:var(--bg2);padding:2rem 2.5rem;display:flex;flex-direction:column;align-items:center;gap:.5rem;text-decoration:none;min-width:190px;position:relative;overflow:hidden;transition:background .3s;transform-style:preserve-3d}
+.c-crd:hover{background:var(--bg3)}
+.c-crd .cct{position:absolute;top:0;left:0;right:0;height:2px;transform:scaleX(0);transform-origin:left;transition:transform .5s}
+.c-crd:nth-child(1) .cct{background:var(--grad1)}
+.c-crd:nth-child(2) .cct{background:var(--grad2)}
+.c-crd:nth-child(3) .cct{background:var(--grad3)}
+.c-crd:nth-child(4) .cct{background:var(--grad4)}
+.c-crd:hover .cct{transform:scaleX(1)}
+.c-crd .cc-glow2{position:absolute;inset:0;opacity:0;transition:opacity .3s;pointer-events:none}
+.c-crd:hover .cc-glow2{opacity:1}
+.c-crd:nth-child(1) .cc-glow2{background:radial-gradient(circle at 50% 50%,rgba(124,58,237,.07),transparent 70%)}
+.c-crd:nth-child(2) .cc-glow2{background:radial-gradient(circle at 50% 50%,rgba(236,72,153,.07),transparent 70%)}
+.c-crd:nth-child(3) .cc-glow2{background:radial-gradient(circle at 50% 50%,rgba(6,182,212,.07),transparent 70%)}
+.c-crd:nth-child(4) .cc-glow2{background:radial-gradient(circle at 50% 50%,rgba(16,185,129,.07),transparent 70%)}
+.c-icon{font-size:1.5rem;margin-bottom:.3rem;position:relative;z-index:1}
+.c-lbl{font-family:'Space Mono',monospace;font-size:.53rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(248,246,255,.3);position:relative;z-index:1}
+.c-val{font-size:.78rem;color:rgba(248,246,255,.7);font-family:'Space Mono',monospace;position:relative;z-index:1}
+.c-hint{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.1em;opacity:0;transition:opacity .25s;position:relative;z-index:1}
+.c-crd:nth-child(1) .c-hint{color:var(--violet2)}
+.c-crd:nth-child(2) .c-hint{color:var(--pink2)}
+.c-crd:nth-child(3) .c-hint{color:var(--cyan2)}
+.c-crd:nth-child(4) .c-hint{color:var(--green2)}
+.c-crd:hover .c-hint{opacity:1}
+.contact-btns{display:flex;gap:1.2rem;justify-content:center;flex-wrap:wrap}
+.btn-cta1{display:inline-block;padding:1.2rem 3.5rem;background:var(--grad1);color:#fff;font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;border-radius:2px;transition:all .3s;position:relative;overflow:hidden}
+.btn-cta1::before{content:'';position:absolute;inset:0;background:var(--grad2);opacity:0;transition:opacity .3s}
+.btn-cta1:hover::before{opacity:1}
+.btn-cta1 span{position:relative;z-index:1}
+.btn-cta1:hover{transform:translateY(-4px);box-shadow:0 20px 50px rgba(124,58,237,.4)}
+.btn-cta2{display:inline-block;padding:1.2rem 3.5rem;background:transparent;color:var(--white);font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;border:1px solid rgba(248,246,255,.2);border-radius:2px;transition:all .3s}
+.btn-cta2:hover{border-color:var(--cyan);color:var(--cyan);transform:translateY(-4px);box-shadow:0 15px 40px rgba(6,182,212,.15)}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:2rem 3rem;display:flex;justify-content:space-between;align-items:center;background:var(--bg)}
+.foot-text{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.1em;color:rgba(248,246,255,.3)}
+.foot-links{display:flex;gap:1.5rem}
+.foot-links a{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.1em;color:rgba(248,246,255,.3);text-decoration:none;transition:color .2s}
+.foot-links a:hover{color:var(--cyan)}
+
+/* FAB */
+#fab{position:fixed;bottom:2rem;right:2rem;z-index:400;display:flex;flex-direction:column;gap:.6rem;opacity:0;transition:opacity .4s;pointer-events:none}
+#fab.show{opacity:1;pointer-events:auto}
+.fab-b{width:50px;height:50px;background:var(--bg2);border:1px solid var(--border);color:var(--white);display:flex;align-items:center;justify-content:center;text-decoration:none;border-radius:2px;transition:all .25s;font-size:.9rem}
+.fab-b:hover{transform:scale(1.1) translateY(-2px)}
+.fab-b.f1{background:var(--grad1);border:none;box-shadow:0 6px 24px rgba(124,58,237,.35)}
+.fab-b.f1:hover{box-shadow:0 12px 36px rgba(124,58,237,.5)}
+.fab-b.f2:hover{background:rgba(236,72,153,.1);border-color:var(--pink);color:var(--pink)}
+.fab-b.f3{font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700}
+.fab-b.f3:hover{background:rgba(6,182,212,.1);border-color:var(--cyan);color:var(--cyan)}
+.fab-b.f4:hover{background:rgba(16,185,129,.1);border-color:var(--green);color:var(--green2)}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
+@keyframes tick{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.rv{opacity:0;transform:translateY(28px);transition:opacity .85s ease,transform .85s ease}
+.rv.vis{opacity:1;transform:none}
+.rv-d1{transition-delay:.1s}.rv-d2{transition-delay:.2s}.rv-d3{transition-delay:.3s}.rv-d4{transition-delay:.45s}
+.t-item{opacity:0;transform:translateX(-20px);transition:opacity .7s ease,transform .7s ease}
+.t-item.vis{opacity:1;transform:none}
+
+@media(max-width:900px){
+  nav{padding:1rem 1.5rem}.nav-links,.nav-cta{display:none}
+  .hero{padding:0 1.5rem}.hero-name{font-size:22vw}
+  .section{padding:5rem 1.5rem}
+  .proj-grid{grid-template-columns:1fr}
+  .certs-grid{grid-template-columns:1fr 1fr}
+  .timeline{padding-left:1.5rem}
+  .skills-inner{grid-template-columns:1fr;gap:3rem;padding:5rem 1.5rem}
+  .about-grid{grid-template-columns:1fr;gap:3rem}
+  .c-cards{gap:0}.c-crd{min-width:140px;padding:1.5rem}
+  footer{flex-direction:column;gap:1rem;text-align:center;padding:1.5rem}
+}
+@media(max-width:500px){.certs-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="cur"></div>
+<div id="cur2"></div>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-bg"></div>
+  <div class="loader-name">SHUBHAM</div>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+  <div class="loader-sub">AI & LLM Portfolio · 2026</div>
+</div>
+
+<canvas id="three-canvas"></canvas>
+
+<!-- FAB -->
+<div id="fab">
+  <a href="mailto:sin66992@gmail.com?subject=Hiring%20Inquiry%20-%20Shubham%20NA&body=Hi%20Shubham%2C%0A%0AI%20found%20your%20portfolio%20and%20would%20love%20to%20discuss%20an%20opportunity.%0A%0AName%3A%0ACompany%3A%0AProject%3A%0A" class="fab-b f1" title="Email">✉</a>
+  <a href="tel:+918979081373" class="fab-b f2" title="Call">📞</a>
+  <a href="https://www.linkedin.com/in/shubham-na" target="_blank" rel="noopener" class="fab-b f3" title="LinkedIn">in</a>
+  <a href="#" class="fab-b f4" title="Back to top">↑</a>
+</div>
+
+<div id="content">
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">S · NA</a>
+  <ul class="nav-links">
+    <li><a href="#work">Work</a></li>
+    <li><a href="#exp">Experience</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#certs">Certs</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="https://www.linkedin.com/in/shubham-na" target="_blank" rel="noopener">LinkedIn ↗</a></li>
+  </ul>
+  <a href="mailto:sin66992@gmail.com?subject=Hiring%20Inquiry%20-%20Shubham%20NA&body=Hi%20Shubham%2C%0A%0AI%20found%20your%20portfolio%20and%20would%20love%20to%20discuss%20an%20opportunity.%0A%0AName%3A%0ACompany%3A%0AProject%3A%0A" class="nav-cta"><span>Hire Me</span></a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div style="position:relative;z-index:2">
+    <div class="hero-badge"><div class="hero-badge-dot"></div><span class="hero-badge-text">Available for Remote Work · Delhi, India</span></div>
+    <div class="hero-name"><span class="g1">SHUBHAM</span><span class="g2">NA</span></div>
+    <div class="hero-tags">
+      <span class="hero-tag-chip htc-v">AI & LLM Trainer</span>
+      <span class="hero-tag-chip htc-c">Prompt Engineer</span>
+      <span class="hero-tag-chip htc-p">AI Safety & Red Teaming</span>
+      <span class="hero-tag-chip htc-g">Linguistics Expert</span>
+      <span class="hero-tag-chip htc-o">Data Analyst</span>
+    </div>
+    <div class="hero-bottom">
+      <p class="hero-desc">3+ years training LLMs for Google, Meta, Scale AI & more. Bilingual English-Hindi, C2 Proficient. Specialized in RLHF, SFT, adversarial prompts & AI safety.</p>
+      <div class="hero-actions">
+        <a href="mailto:sin66992@gmail.com?subject=Hiring%20Inquiry%20-%20Shubham%20NA&body=Hi%20Shubham%2C%0A%0AI%20found%20your%20portfolio%20and%20would%20love%20to%20discuss%20an%20opportunity.%0A%0AName%3A%0ACompany%3A%0AProject%3A%0A" class="btn-primary"><span>✉ Hire Me</span></a>
+        <a href="#work" class="btn-sec">View Work ↓</a>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item"><div class="stat-num s1">9+</div><div class="stat-label">Platforms</div></div>
+      <div class="stat-item"><div class="stat-num s2">3+</div><div class="stat-label">Years Active</div></div>
+      <div class="stat-item"><div class="stat-num s3">8+</div><div class="stat-label">Certifications</div></div>
+      <div class="stat-item"><div class="stat-num s4">C2</div><div class="stat-label">English Level</div></div>
+    </div>
+  </div>
+  <div class="scroll-hint"><span class="scroll-hint-text">Scroll</span><div class="scroll-line"></div></div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ti v">RLHF</span><span class="ti">·</span><span class="ti c">Prompt Engineering</span><span class="ti">·</span><span class="ti p">SFT Specialist</span><span class="ti">·</span><span class="ti g">Factuality QA</span><span class="ti">·</span><span class="ti o">Red Teaming</span><span class="ti">·</span><span class="ti v">Gemini Training</span><span class="ti">·</span><span class="ti c">Meta LLMs</span><span class="ti">·</span><span class="ti p">Scale AI Research</span><span class="ti">·</span><span class="ti g">Bilingual AI</span><span class="ti">·</span><span class="ti o">Adversarial Prompts</span><span class="ti">·</span><span class="ti v">Python · Java · JS</span><span class="ti">·</span><span class="ti c">C2 English</span><span class="ti">·</span><span class="ti p">Cultural Awareness</span><span class="ti">·</span>
+    <span class="ti v">RLHF</span><span class="ti">·</span><span class="ti c">Prompt Engineering</span><span class="ti">·</span><span class="ti p">SFT Specialist</span><span class="ti">·</span><span class="ti g">Factuality QA</span><span class="ti">·</span><span class="ti o">Red Teaming</span><span class="ti">·</span><span class="ti v">Gemini Training</span><span class="ti">·</span><span class="ti c">Meta LLMs</span><span class="ti">·</span><span class="ti p">Scale AI Research</span><span class="ti">·</span><span class="ti g">Bilingual AI</span><span class="ti">·</span><span class="ti o">Adversarial Prompts</span><span class="ti">·</span><span class="ti v">Python · Java · JS</span><span class="ti">·</span><span class="ti c">C2 English</span><span class="ti">·</span><span class="ti p">Cultural Awareness</span><span class="ti">·</span>
+  </div>
+</div>
+
+<!-- WORK -->
+<div id="work"><div class="section rv">
+  <div class="sec-head sh1"><span class="sec-num">01</span><h2 class="sec-title t1">Key <em>Projects</em></h2></div>
+  <div class="proj-grid">
+    <div class="proj-card rv rv-d1"><div class="pc-bar"></div><div class="pc-glow"></div>
+      <div class="pc-num">01 — Google</div><div class="pc-name">Gemini Factuality & Speech QA</div>
+      <div class="pc-client">Outlier AI + Invisible Technologies</div>
+      <div class="pc-desc">Hallucination flagging, factuality evaluation, speech-text alignment, and instruction tuning for Google Gemini. Rated LLM outputs for truthfulness, fluency, and safety via RaterHub & CrowdCompute.</div>
+      <div class="pc-tags"><span class="pc-tag">Factuality</span><span class="pc-tag">Speech QA</span><span class="pc-tag">RLHF</span><span class="pc-tag">RaterHub</span></div>
+    </div>
+    <div class="proj-card rv rv-d2"><div class="pc-bar"></div><div class="pc-glow"></div>
+      <div class="pc-num">02 — Meta</div><div class="pc-name">Meta LLM Alignment</div>
+      <div class="pc-client">Alignerr · Quality Assurance Analyst</div>
+      <div class="pc-desc">Tuned Meta LLM responses for alignment, coherence, and factual correctness. AI Audio Reviewing — tone, clarity, speech-text alignment. Bilingual multi-turn conversation testing in English & Hindi.</div>
+      <div class="pc-tags"><span class="pc-tag">SFT</span><span class="pc-tag">Multi-turn QA</span><span class="pc-tag">Audio Review</span><span class="pc-tag">Alignment</span></div>
+    </div>
+    <div class="proj-card rv rv-d1"><div class="pc-bar"></div><div class="pc-glow"></div>
+      <div class="pc-num">03 — Scale AI</div><div class="pc-name">Adversarial AI Research</div>
+      <div class="pc-client">Scale AI · AI Researcher · 2 yrs 8 mos</div>
+      <div class="pc-desc">Designed culturally grounded adversarial prompts to test model reasoning, safety, and accuracy across Hindi, Hinglish, and English. Red-teaming for AI safety and bias detection at scale.</div>
+      <div class="pc-tags"><span class="pc-tag">Red Teaming</span><span class="pc-tag">Adversarial</span><span class="pc-tag">Linguistics</span><span class="pc-tag">Hindi-English</span></div>
+    </div>
+    <div class="proj-card rv rv-d2"><div class="pc-bar"></div><div class="pc-glow"></div>
+      <div class="pc-num">04 — DeepLLMData</div><div class="pc-name">Multilingual Prompt Engineering</div>
+      <div class="pc-client">DeepLLMData · Prompt Engineer · Aug 2025–Present</div>
+      <div class="pc-desc">Adversarial AI evaluation and multilingual training for LLMs. Designing prompts to test model reasoning, safety, cultural awareness, and robustness. Prompt-quality assessment and red-teaming.</div>
+      <div class="pc-tags"><span class="pc-tag">Prompt Engineering</span><span class="pc-tag">Cultural AI</span><span class="pc-tag">Generative AI</span></div>
+    </div>
+    <div class="proj-card rv rv-d1"><div class="pc-bar"></div><div class="pc-glow"></div>
+      <div class="pc-num">05 — Abaka.AI</div><div class="pc-name">Visual Content AI Training</div>
+      <div class="pc-client">Abaka.AI · Advance AI Data Trainer · Sep 2025–Present</div>
+      <div class="pc-desc">Multimodal task evaluation and annotation for advanced AI systems. Reviewing, evaluating, and reasoning about visual and textual content under structured guidelines with high quality standards.</div>
+      <div class="pc-tags"><span class="pc-tag">Multimodal</span><span class="pc-tag">Visual QA</span><span class="pc-tag">Annotation</span></div>
+    </div>
+    <div class="proj-card rv rv-d2"><div class="pc-bar"></div><div class="pc-glow"></div>
+      <div class="pc-num">06 — RWS / Telus</div><div class="pc-name">Speech & Linguistic Annotation</div>
+      <div class="pc-client">RWS Group + Telus International AI</div>
+      <div class="pc-desc">Factuality and speech assessments for the Callisto project. FT Studio linguistic annotation for academic and voice datasets. Hindi-English corpora with cultural nuance verification.</div>
+      <div class="pc-tags"><span class="pc-tag">Speech QA</span><span class="pc-tag">FT Studio</span><span class="pc-tag">Callisto</span><span class="pc-tag">Bilingual</span></div>
+    </div>
+  </div>
+</div></div>
+
+<!-- EXPERIENCE -->
+<div id="exp"><div class="section rv">
+  <div class="sec-head sh2"><span class="sec-num">02</span><h2 class="sec-title t2"><em>Work</em> Experience</h2></div>
+  <div class="timeline">
+    <div class="t-item"><div class="t-dot"></div>
+      <div class="t-period">SEP 2025 → Present · 9 mos · Remote</div>
+      <div class="t-company">Abaka.AI</div><div class="t-role">Advance AI Data Trainer — Visual Content</div>
+      <div class="t-desc">Generalist AI Trainer. Development, evaluation, and improvement of advanced AI systems through multimodal tasks. Reviewing, evaluating, annotating, and reasoning about visual and textual content.</div>
+      <div class="t-skills"><span class="t-sk">Multimodal AI</span><span class="t-sk">Visual QA</span><span class="t-sk">Annotation</span></div>
+    </div>
+    <div class="t-item"><div class="t-dot"></div>
+      <div class="t-period">AUG 2025 → Present · 10 mos · Remote</div>
+      <div class="t-company">DeepLLMData</div><div class="t-role">Prompt Engineer</div>
+      <div class="t-desc">Adversarial AI evaluation and multilingual LLM training. Designing culturally grounded prompts to test model reasoning, safety, and factual accuracy across Hindi, Hinglish, and English datasets.</div>
+      <div class="t-skills"><span class="t-sk">Prompt Engineering</span><span class="t-sk">Red Teaming</span><span class="t-sk">Cultural Awareness</span><span class="t-sk">Adversarial</span></div>
+    </div>
+    <div class="t-item"><div class="t-dot"></div>
+      <div class="t-period">JAN 2025 → Present · 1 yr 5 mos</div>
+      <div class="t-company">Invisible Technologies</div><div class="t-role">Advanced AI Data Trainer | QC & Contributor</div>
+      <div class="t-desc">Reviewed and rated LLM outputs (Google Gemini) for truthfulness, fluency, and safety via RaterHub & CrowdCompute. Factuality and instruction-following checks on high-volume multi-turn conversations.</div>
+      <div class="t-skills"><span class="t-sk">Gemini QA</span><span class="t-sk">Factuality</span><span class="t-sk">RLHF</span><span class="t-sk">RaterHub</span></div>
+    </div>
+    <div class="t-item"><div class="t-dot"></div>
+      <div class="t-period">FEB 2023 → SEP 2025 · 2 yrs 8 mos · Delhi · Remote</div>
+      <div class="t-company">Scale AI</div><div class="t-role">Artificial Intelligence Researcher</div>
+      <div class="t-desc">Bilingual (English–Hindi) annotation, linguistics, and adversarial/stumping prompt design. Evaluated responses for linguistic quality, cultural awareness, alignment, robustness. Identified hallucinations and bias.</div>
+      <div class="t-skills"><span class="t-sk">Linguistics</span><span class="t-sk">Bilingual Annotation</span><span class="t-sk">Adversarial Design</span><span class="t-sk">AI Safety</span></div>
+    </div>
+    <div class="t-item"><div class="t-dot"></div>
+      <div class="t-period">JAN 2024 → JUL 2025 · 1 yr 7 mos</div>
+      <div class="t-company">Alignerr</div><div class="t-role">Quality Assurance Analyst + AI & LLM Data Trainer</div>
+      <div class="t-desc">QA Analyst and LLM Trainer. Python, JavaScript, Java, C++, Data Annotation. Tuned Meta LLM responses. Annotation, data annotation, and 7+ skills across roles at Alignerr.</div>
+      <div class="t-skills"><span class="t-sk">Python</span><span class="t-sk">JavaScript</span><span class="t-sk">C++</span><span class="t-sk">Java</span><span class="t-sk">Data Annotation</span></div>
+    </div>
+    <div class="t-item"><div class="t-dot"></div>
+      <div class="t-period">SEP 2024 → MAY 2025 · 9 mos</div>
+      <div class="t-company">RWS Group</div><div class="t-role">AI Data Trainer</div>
+      <div class="t-desc">Factuality and audio reviewing for the Callisto project. Annotation QA across 2 experiences at RWS Group evaluating AI trainer outputs and ensuring annotation consistency.</div>
+      <div class="t-skills"><span class="t-sk">Annotation</span><span class="t-sk">AI Trainer</span><span class="t-sk">Callisto</span></div>
+    </div>
+    <div class="t-item"><div class="t-dot"></div>
+      <div class="t-period">MAY 2024 → Present</div>
+      <div class="t-company">Outlier AI</div><div class="t-role">AI Data Trainer | Prompt Engineer | QC</div>
+      <div class="t-desc">Trained Gemini model with real-time speech and text data. Factuality QA, speech annotation, prompt construction. RLHF and SFT loops. Bilingual output annotation and review.</div>
+      <div class="t-skills"><span class="t-sk">Gemini Speech</span><span class="t-sk">SFT</span><span class="t-sk">Prompt Writing</span><span class="t-sk">RLHF</span></div>
+    </div>
+  </div>
+</div></div>
+
+<!-- SKILLS -->
+<div id="skills" class="skills-bg"><div class="skills-inner rv">
+  <div class="sk-left">
+    <h2><span class="gl1">Core</span><span class="gl2">Skills</span></h2>
+    <p class="sk-left p">3+ years, 9+ platforms. LLM training, multilingual NLP, AI safety, adversarial evaluation — certified and verified.</p>
+  </div>
+  <div class="sk-groups">
+    <div><div class="sg-label l1">AI & LLM Specializations</div>
+      <div class="sg-pills">
+        <span class="sg-pill p1 hi">RLHF & SFT</span><span class="sg-pill p1 hi">Prompt Engineering</span><span class="sg-pill p1 hi">Factuality & Reasoning Analysis</span><span class="sg-pill p1">LLM Data Annotation & Evaluation</span><span class="sg-pill p1">Red Teaming</span><span class="sg-pill p1">Adversarial / Stumping Prompt Design</span><span class="sg-pill p1">Model Alignment & Safety Evaluation</span><span class="sg-pill p1">Hallucination Detection</span><span class="sg-pill p1">Generative AI</span><span class="sg-pill p1">QC & Rubric-Based Review</span>
+      </div>
+    </div>
+    <div><div class="sg-label l2">Linguistics & Language</div>
+      <div class="sg-pills">
+        <span class="sg-pill p2 hi">Bilingual English–Hindi Annotation</span><span class="sg-pill p2 hi">Linguistics</span><span class="sg-pill p2">Speech & Text QA</span><span class="sg-pill p2">Cultural Awareness</span><span class="sg-pill p2">Translation QA</span><span class="sg-pill p2">Transcription Alignment</span><span class="sg-pill p2">Tone & Emotion Tagging</span><span class="sg-pill p2">Regional Nuance Verification</span>
+      </div>
+    </div>
+    <div><div class="sg-label l3">Technical / Programming</div>
+      <div class="sg-pills">
+        <span class="sg-pill p3 hi">Python</span><span class="sg-pill p3 hi">JavaScript</span><span class="sg-pill p3">Java</span><span class="sg-pill p3">C++</span><span class="sg-pill p3">Data Analysis</span><span class="sg-pill p3">Microsoft Excel</span><span class="sg-pill p3">Data Modeling</span><span class="sg-pill p3">Data Mining</span><span class="sg-pill p3">Data Management</span><span class="sg-pill p3">GDPR</span>
+      </div>
+    </div>
+    <div><div class="sg-label l4">Platforms & Tools</div>
+      <div class="sg-pills">
+        <span class="sg-pill p4">RaterHub</span><span class="sg-pill p4">CrowdCompute</span><span class="sg-pill p4">FT Studio</span><span class="sg-pill p4">Appen Portal</span><span class="sg-pill p4">Oneforma</span><span class="sg-pill p4">Outlier Platform</span><span class="sg-pill p4">Alignerr</span><span class="sg-pill p4">Scale AI</span><span class="sg-pill p4">DeepLLMData</span><span class="sg-pill p4">Abaka.AI</span>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- CERTS -->
+<div id="certs"><div class="section rv">
+  <div class="sec-head sh3"><span class="sec-num">04</span><h2 class="sec-title t3"><em>Licenses &</em> Certifications</h2></div>
+  <div class="certs-grid">
+    <div class="cert-card rv rv-d1"><div class="cc-top"></div><div class="cc-glow"></div><div class="cc-badge">✦ Prompt AI</div><div class="cc-name">Prompt Engineering for ChatGPT</div><div class="cc-issuer">Great Learning</div><div class="cc-date">Issued May 2026</div><div class="arr">↗</div></div>
+    <div class="cert-card rv rv-d2"><div class="cc-top"></div><div class="cc-glow"></div><div class="cc-badge">✦ Certified</div><div class="cc-name">Prompt Engineering</div><div class="cc-issuer">Simplilearn</div><div class="cc-date">Issued May 2026</div><div class="arr">↗</div></div>
+    <div class="cert-card rv rv-d3"><div class="cc-top"></div><div class="cc-glow"></div><div class="cc-badge">✦ Advanced</div><div class="cc-name">Advanced AI Data Trainer | QC & Prompt Engineer</div><div class="cc-issuer">micro1</div><div class="cc-date">Issued May 2026</div><div class="arr">↗</div></div>
+    <div class="cert-card rv rv-d1"><div class="cc-top"></div><div class="cc-glow"></div><div class="cc-badge">✦ Language C2</div><div class="cc-name">EF SET English Certificate 83/100</div><div class="cc-issuer">EF SET — C2 Proficient</div><div class="cc-date">Issued Aug 2025</div><div class="arr">↗</div></div>
+    <div class="cert-card rv rv-d2"><div class="cc-top"></div><div class="cc-glow"></div><div class="cc-badge">✦ Programming</div><div class="cc-name">Java Certification</div><div class="cc-issuer">Simplilearn — ID 8170538</div><div class="cc-date">Issued Apr 2025</div><div class="arr">↗</div></div>
+    <div class="cert-card rv rv-d3"><div class="cc-top"></div><div class="cc-glow"></div><div class="cc-badge">✦ Programming</div><div class="cc-name">Python</div><div class="cc-issuer">TestDome</div><div class="cc-date">Issued Apr 2025</div><div class="arr">↗</div></div>
+    <div class="cert-card rv rv-d1"><div class="cc-top"></div><div class="cc-glow"></div><div class="cc-badge">✦ Data</div><div class="cc-name">Data Analysis using Microsoft Excel</div><div class="cc-issuer">Coursera — ID JYYNE5KM2AZX</div><div class="cc-date">Issued May 2024</div><div class="arr">↗</div></div>
+    <div class="cert-card rv rv-d2"><div class="cc-top"></div><div class="cc-glow"></div><div class="cc-badge">✦ Data Science</div><div class="cc-name">Certified Data Scientist</div><div class="cc-issuer">Simplilearn — ID 2997089</div><div class="cc-date">Issued Nov 2021</div><div class="arr">↗</div></div>
+    <div class="cert-card rv rv-d3"><div class="cc-top"></div><div class="cc-glow"></div><div class="cc-badge">✦ Compliance</div><div class="cc-name">General Data Protection Regulation (GDPR)</div><div class="cc-issuer">Microsoft Associate</div><div class="cc-date">Verified</div><div class="arr">↗</div></div>
+  </div>
+</div></div>
+
+<!-- ABOUT -->
+<div id="about"><div class="section rv">
+  <div class="sec-head sh4"><span class="sec-num">05</span><h2 class="sec-title t4">About <em>Me</em></h2></div>
+  <div class="about-grid">
+    <div>
+      <div class="about-big"><span class="ab1">Delhi,</span><span class="ab2">India</span></div>
+      <p class="about-p">AI & LLM Data Trainer, Linguistics expert, Language specialist, Prompt Engineer, AI Safety & Red Teaming specialist, and Data Analyst — currently at Abaka AI.</p>
+      <p class="about-p">3+ years across 9+ platforms including Google (Gemini), Meta, Scale AI, DeepLLMData, and Invisible Technologies. I make AI systems safer, more accurate, and culturally aware.</p>
+      <p class="about-p">Bilingual English (C2 Proficient, EF SET 83/100) and native Hindi speaker. Technical expertise in Python, JavaScript, Java, and C++ combined with deep linguistic precision.</p>
+      <div class="lang-wrap">
+        <span class="lang-badge lb1">English — C2 Proficient</span>
+        <span class="lang-badge lb2">Hindi — Native</span>
+      </div>
+    </div>
+    <div>
+      <div class="edu-stack">
+        <div class="edu-entry rv"><div class="edu-deg">Master's Degree in Commerce</div><div class="edu-school">Bundelkhand University — Jhansi, India</div><div class="edu-yr">May 2019 – April 2021</div></div>
+        <div class="edu-entry rv rv-d1"><div class="edu-deg">Professional Certificate in Data Science</div><div class="edu-school">Simplilearn — Remote</div><div class="edu-yr">April 2021 – March 2022</div></div>
+        <div class="edu-entry rv rv-d2"><div class="edu-deg">Prompt Engineering for ChatGPT</div><div class="edu-school">Great Learning</div><div class="edu-yr">Completed May 2026</div></div>
+        <div class="edu-entry rv rv-d3"><div class="edu-deg">Advanced AI Data Trainer Certification</div><div class="edu-school">micro1 · May 2026</div><div class="edu-yr">Issued May 2026</div></div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- CONTACT -->
+<div id="contact"><div class="contact-sec rv">
+  <p class="contact-pre">06 — Get In Touch</p>
+  <div class="contact-mega">LET'S<br>TALK.</div>
+  <div class="c-cards">
+    <a href="mailto:sin66992@gmail.com?subject=Hiring%20Inquiry%20-%20Shubham%20NA&body=Hi%20Shubham%2C%0A%0AI%20found%20your%20portfolio%20and%20would%20love%20to%20discuss%20an%20opportunity.%0A%0AName%3A%0ACompany%3A%0AProject%3A%0A" class="c-crd">
+      <div class="cct"></div><div class="cc-glow2"></div><div class="c-icon">✉</div><div class="c-lbl">Email</div><div class="c-val">sin66992@gmail.com</div><div class="c-hint">Click to email →</div>
+    </a>
+    <a href="tel:+918979081373" class="c-crd">
+      <div class="cct"></div><div class="cc-glow2"></div><div class="c-icon">📞</div><div class="c-lbl">Phone</div><div class="c-val">+91 8979081373</div><div class="c-hint">Click to call →</div>
+    </a>
+    <a href="https://www.linkedin.com/in/shubham-na" target="_blank" rel="noopener" class="c-crd">
+      <div class="cct"></div><div class="cc-glow2"></div><div class="c-icon">💼</div><div class="c-lbl">LinkedIn</div><div class="c-val">linkedin.com/in/shubham-na</div><div class="c-hint">View profile →</div>
+    </a>
+    <div class="c-crd">
+      <div class="cct"></div><div class="cc-glow2"></div><div class="c-icon">📍</div><div class="c-lbl">Location</div><div class="c-val">Delhi, India 110092</div><div class="c-hint">Remote · Open to Work ✓</div>
+    </div>
+  </div>
+  <div class="contact-btns">
+    <a href="mailto:sin66992@gmail.com?subject=Hiring%20Inquiry%20-%20Shubham%20NA&body=Hi%20Shubham%2C%0A%0AI%20found%20your%20portfolio%20and%20would%20love%20to%20discuss%20an%20opportunity.%0A%0AName%3A%0ACompany%3A%0AProject%3A%0A" class="btn-cta1"><span>✉ Send a Message</span></a>
+    <a href="tel:+918979081373" class="btn-cta2">📞 Call Now</a>
+  </div>
+</div></div>
+
+<footer>
+  <p class="foot-text">© 2026 Shubham NA — AI & LLM Data Trainer · Prompt Engineer · Delhi, India</p>
+  <div class="foot-links">
+    <a href="mailto:sin66992@gmail.com">Email</a>
+    <a href="tel:+918979081373">Phone</a>
+    <a href="https://www.linkedin.com/in/shubham-na" target="_blank" rel="noopener">LinkedIn ↗</a>
+    <a href="#">↑ Top</a>
+  </div>
+</footer>
+</div>
+
+<!-- THREE.JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ── THREE.JS 3D SCENE ──
+const canvas = document.getElementById('three-canvas');
+const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+camera.position.z = 30;
+
+// Color palette matching CSS vars
+const COLORS = [0x7C3AED, 0x06B6D4, 0xEC4899, 0x10B981, 0xF59E0B, 0x9D5BF5, 0x22D3EE, 0xF472B6];
+
+// 1. Particle field — colored
+const pCount = 2000;
+const pGeo = new THREE.BufferGeometry();
+const pos = new Float32Array(pCount*3);
+const col = new Float32Array(pCount*3);
+const sz = new Float32Array(pCount);
+for(let i=0; i<pCount; i++){
+  pos[i*3]=(Math.random()-.5)*130;
+  pos[i*3+1]=(Math.random()-.5)*130;
+  pos[i*3+2]=(Math.random()-.5)*80;
+  const c = new THREE.Color(COLORS[Math.floor(Math.random()*COLORS.length)]);
+  const mix = c.clone().lerp(new THREE.Color(0xffffff), Math.random()*.4);
+  col[i*3]=mix.r; col[i*3+1]=mix.g; col[i*3+2]=mix.b;
+  sz[i] = Math.random()*2.5+.5;
+}
+pGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+pGeo.setAttribute('color', new THREE.BufferAttribute(col,3));
+pGeo.setAttribute('size', new THREE.BufferAttribute(sz,1));
+const pMat = new THREE.PointsMaterial({size:.2, vertexColors:true, transparent:true, opacity:.75, sizeAttenuation:true, depthWrite:false, blending:THREE.AdditiveBlending});
+const particles = new THREE.Points(pGeo, pMat);
+scene.add(particles);
+
+// 2. Floating wireframe shapes with colors
+const shapes = [];
+const geomTypes = [
+  ()=>new THREE.OctahedronGeometry(1.3,0),
+  ()=>new THREE.TetrahedronGeometry(1.1,0),
+  ()=>new THREE.IcosahedronGeometry(1.0,0),
+  ()=>new THREE.DodecahedronGeometry(0.9,0),
+];
+for(let i=0; i<16; i++){
+  const g = geomTypes[i%geomTypes.length]();
+  const color = COLORS[i%COLORS.length];
+  const mat = new THREE.MeshBasicMaterial({color, wireframe:true, transparent:true, opacity:.1+Math.random()*.08});
+  const mesh = new THREE.Mesh(g, mat);
+  mesh.position.set((Math.random()-.5)*70,(Math.random()-.5)*60,(Math.random()-.5)*40-5);
+  const s = Math.random()*2.5+.7;
+  mesh.scale.set(s,s,s);
+  mesh.userData={rx:(Math.random()-.5)*.01, ry:(Math.random()-.5)*.009, rz:(Math.random()-.5)*.007, fs:Math.random()*.003+.001, fa:Math.random()*.4+.15, fo:Math.random()*Math.PI*2, oy:mesh.position.y};
+  scene.add(mesh); shapes.push(mesh);
+}
+
+// 3. Glowing orbs (large dim spheres for depth)
+const orbColors=[0x7C3AED,0x06B6D4,0xEC4899,0x10B981];
+orbColors.forEach((c,i)=>{
+  const orb = new THREE.Mesh(new THREE.SphereGeometry(3+i,8,8), new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.04,wireframe:false}));
+  orb.position.set([-25,20,-30,15][i],[10,-15,20,-10][i],[-10,5,-5,10][i]);
+  orb.userData={pulse:Math.random()*Math.PI*2};
+  scene.add(orb); shapes.push(orb);
+});
+
+// 4. Network lines
+const lv=[];
+const linePairs=180;
+for(let i=0;i<linePairs;i++){
+  const ai=Math.floor(Math.random()*pCount)*3;
+  const bi=Math.floor(Math.random()*pCount)*3;
+  const dx=pos[ai]-pos[bi],dy=pos[ai+1]-pos[bi+1];
+  if(Math.sqrt(dx*dx+dy*dy)<18){lv.push(pos[ai],pos[ai+1],pos[ai+2],pos[bi],pos[bi+1],pos[bi+2]);}
+}
+const lGeo=new THREE.BufferGeometry();
+lGeo.setAttribute('position',new THREE.Float32BufferAttribute(lv,3));
+scene.add(new THREE.LineSegments(lGeo, new THREE.LineBasicMaterial({color:0x7C3AED,transparent:true,opacity:.05})));
+
+// Mouse + scroll
+let mx=0,my=0,tx=0,ty=0,scrollY=0;
+document.addEventListener('mousemove',e=>{mx=(e.clientX/window.innerWidth-.5)*2; my=-(e.clientY/window.innerHeight-.5)*2;});
+window.addEventListener('scroll',()=>{scrollY=window.scrollY;});
+
+// Render loop
+let t=0;
+function animate(){
+  requestAnimationFrame(animate);
+  t+=.005; tx+=(mx-tx)*.03; ty+=(my-ty)*.03;
+  particles.rotation.y=t*.035+tx*.12;
+  particles.rotation.x=ty*.08;
+  camera.position.y=-scrollY*.007;
+  camera.position.x+=(tx*3.5-camera.position.x)*.02;
+  shapes.forEach((s,idx)=>{
+    if(s.userData.rx!==undefined){
+      s.rotation.x+=s.userData.rx; s.rotation.y+=s.userData.ry; s.rotation.z+=s.userData.rz;
+      s.position.y=s.userData.oy+Math.sin(t*s.userData.fs*200+s.userData.fo)*s.userData.fa*3;
+      s.material.opacity=(.06+Math.sin(t+s.userData.fo)*.03);
+    }
+    if(s.userData.pulse!==undefined){
+      s.material.opacity=.025+Math.sin(t*1.2+s.userData.pulse)*.015;
+      s.scale.setScalar(1+Math.sin(t*.8+s.userData.pulse)*.05);
+    }
+  });
+  renderer.render(scene,camera);
+}
+animate();
+window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);});
+
+// ── CURSOR ──
+const curEl=document.getElementById('cur'),cur2El=document.getElementById('cur2');
+let cx=0,cy=0,crx=0,cry=0;
+document.addEventListener('mousemove',e=>{cx=e.clientX;cy=e.clientY;curEl.style.left=cx+'px';curEl.style.top=cy+'px';});
+(function loop(){crx+=(cx-crx)*.1;cry+=(cy-cry)*.1;cur2El.style.left=crx+'px';cur2El.style.top=cry+'px';requestAnimationFrame(loop);})();
+document.querySelectorAll('a,button,.proj-card,.cert-card,.c-crd').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('lh'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('lh'));
+});
+
+// ── 3D CARD TILT ──
+document.querySelectorAll('.proj-card,.cert-card,.c-crd').forEach(el=>{
+  el.addEventListener('mousemove',e=>{
+    const r=el.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height;
+    el.style.transform=`perspective(700px) rotateX(${(y-.5)*10}deg) rotateY(${(x-.5)*-10}deg) translateZ(10px)`;
+    el.style.setProperty('--mx',`${x*100}%`);
+    el.style.setProperty('--my',`${y*100}%`);
+  });
+  el.addEventListener('mouseleave',()=>el.style.transform='perspective(700px) rotateX(0deg) rotateY(0deg) translateZ(0)');
+});
+
+// ── LOADER ──
+window.addEventListener('load',()=>setTimeout(()=>document.getElementById('loader').classList.add('hide'),2200));
+
+// ── SCROLL REVEAL ──
+const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis');}),{threshold:.07});
+document.querySelectorAll('.rv,.t-item').forEach(el=>obs.observe(el));
+
+// ── NAV ──
+const navEl=document.getElementById('nav'), fabEl=document.getElementById('fab');
+const allSecs=[...document.querySelectorAll('[id]')];
+const navAs=[...document.querySelectorAll('.nav-links a')];
+window.addEventListener('scroll',()=>{
+  navEl.classList.toggle('sc',window.scrollY>80);
+  fabEl.classList.toggle('show',window.scrollY>window.innerHeight*.6);
+  let cur='';
+  allSecs.forEach(s=>{if(window.scrollY>=s.offsetTop-140)cur=s.id;});
+  navAs.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur));
+});
+</script>
+</body>
+</html>
